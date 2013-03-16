@@ -1,0 +1,14 @@
+%Возвращает значение потенциала и эффективной массы для данного индекса.
+%Если индекс половинный, то возвращем среднюю точку.
+function u = u(i)
+global Uc
+global N
+global U_elstatic_part
+U = Uc + U_elstatic_part;
+if (i - fix(i)) == 0.5    
+    u = (U(i+0.5) + U(fix(i - 0.5))/2
+else
+    u = U(i)
+end
+
+
