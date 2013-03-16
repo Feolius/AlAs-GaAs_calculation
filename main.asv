@@ -2,8 +2,6 @@
 clearvars
 global t
 t = [];
-%Общий потенциал решетки
-global lattice_U
 %lattice_U = [];
 %Количество точек для апроксиммации одного нанометра (надо чтоб было кратно
 % 10)
@@ -50,42 +48,58 @@ global N_start_delta
 N_start_delta = 11*(l_GaAs + l_AlAs)*N_apr + l_surface*N_apr + 10;
 global U_elstatic
 U_elstatic = zeros(1, N);
-% k2=0.22*10^-2;
-% for i=N_start_delta+1:N/2 - 70
-%     U_elstatic(i) = (i - N_start_delta)*k2;
-% end;
-% for i=N/2-69:N/2+1
-%     U_elstatic(i) = U_elstatic(N/2 - 70);
-% end;
-% U_elstatic = symm_array(U_elstatic);
-%Считаем, что дельта слой распределен равномерно на 0.3 нм
 nd = zeros(1, N);
 for i = N_start_delta + 1:N_start_delta + 3
-    nd(i) = 4.2*10^15/(3*1/N);
+    nd(i) = 4.65*10^15/(3*1/N);
 end
 x = linspace(0, 1, N);
-[psi, E] = reshenie();
-psi1 = psi(1, :);
-n1 = psi1.^2*8.4*10^15;
-n = nd - n1;
+%Пробуем одну итерацию
+[psi, E] = reshenie('gamma');
+psi1_gamma = psi(1, :);
+psi2_gamma = psi(2, :);
+n1_gamma = psi1_gamma.^2*4.4*10^15;
+n2_gamma = psi2_gamma.^2*4*10^15;
+n = nd - n1_gamma - n2_gamma;
 n = symm_array(n);
 U_elstatic = puasson(n);
-for i=1:5
-    %Решаем Шредингера
-    [psi, E] = reshenie();
-    E_analize(2*i-1) = E(1);
-    E_analize(2*i) = E(2);    
-    psi1 = psi(1, :);
-    psi2 = psi(2, :);
-    %Задаем распределение концентрации в подзонах
-    n1 = psi1.^2*4.4*10^15;
-    n2 = psi2.^2*4*10^15;
-    %Полное распределение концентрации
-    n = nd - n1;
-    n = symm_array(n);
-    U_elstatic = puasson(n);
-end
-plot(x, U_elstatic);
+% Вставим добавочку для Х электронов
+U_add = zeros(1, N);
+U_add(1:283) = ones(1, 283)*U_elstatic(685);
+koeff = 0.000695;
+U_add_max = koeff*200;
+for i = 1:200
+    U_add(283 + i) = U_elstatic(685) - U_elstatic(685)*i/200;
+end;
+U_add = symm_array(U_add);
+U_elstatic = U_elstatic + U_add;
+[psi, E] = reshenie('X');
+psi_x = psi(1, :);
+% n1 = psi1.^2*8.4*10^15;
+% n = nd - n1;
+% n = symm_array(n);
+% U_elstatic = puasson(n);
+% for i=1:5
+%     %Решаем Шредингера для гамма электронов
+%     [psi, E] = reshenie();
+%     E_analize_gamma(2*i-1) = E(1);
+%     E_analize_gamma(2*i) = E(2);    
+%     psi1_gamma = psi(1, :);
+%     psi2_gamma = psi(2, :);
+%     %Решаем Шредингера для Х электронов
+%     delta_U = -0.3;
+%     [psi, E] = reshenie();
+%     E_analize_X(i) = E(1);   
+%     psi1_X = psi(1, :);    
+%     %Задаем распределение концентрации в подзонах
+%     n1_gamma = psi1_gamma.^2*4.4*10^15;
+%     n2_gamma = psi2_gamma.^2*4*10^15;
+%     n1_X = psi1_X.2*0.9;
+%     %Полное распределение концентрации
+%     n = nd - n1;
+%     n = symm_array(n);
+%     U_elstatic = puasson(n);
+% end
+plot(x, psi);
 
 
 

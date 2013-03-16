@@ -1,7 +1,6 @@
 %Задает граничные условия и вызывает решение Шредингера для каждого
 %значения энергии
-function [psi, E_ans]=reshenie()
-global delta_U
+function [psi, E_ans]=reshenie(type)
 global N_GaAs
 global N_AlAs
 global U_left
@@ -12,33 +11,46 @@ global N_surface
 global m
 global N_well
 global U
+global j
 %Масса свободного электрона в г
 m_e = 9.109*10^(-28);
-%Задаем максимум сканирования по энергии
-E_max = delta_U;
-%Число шагов по энергии и величина шага
-nE = 10000;
-dE = E_max/nE;
 %Шаг по расстоянию
 h = 1/N;
 %Задаем разрыв зоны проводимости и эффективную массу в слоях
-if delta_U > 0
+if strcmp('gamma', type) > 0
     %Это гамма электроны
     U_GaAs = 0;
-    U_AlAs = delta_U;
+    U_AlAs = 1;
     m_GaAs = 0.068 * m_e;
     m_AlAs = 0.15 * m_e;
 else
-    U_GaAs = abs(delta_U);
+    U_GaAs = 0.3;
     U_AlAs = 0;
     m_GaAs = 1.3 * m_e;
     m_AlAs = 1.1 * m_e;
 end
+%Задаем максимум сканирования по энергии
+if U_GaAs ~= 0
+    E_max = U_GaAs;
+else
+    E_max = U_AlAs;
+end;
+%Число шагов по энергии и величина шага
+nE = 10000;
+dE = E_max/nE;
 %Счетчики итераций и решений
 j = 1;
 n = 1;
 E = 0;
-while E < E_max
+% if strcmp('X', type)
+% hold on;
+% x = linspace(0, 1, N);
+% axis([0 N -5 5]);
+% psi_temp1 = zeros(1, N);
+% h1=plot(x, psi_temp1,'g');
+% set(h1,'EraseMode','xor','MarkerSize',18);
+% end;
+while E < 1
     
     %Сюда складируем решения в течении одной итерации
     psi_temp1 = zeros(1, N);
@@ -110,13 +122,19 @@ while E < E_max
             end
             psi(n, :) = psians/square^0.5;
             E_ans(n) = E;
-            if n == 2
+            if n == 2 && strcmp(type, 'gamma')
                 break
-            end
-            
+            elseif n == 2 && strcmp(type, 'X')
+                break
+            end            
             n = n + 1;
         end
     end
+%     if strcmp('X', type)
+%      set(gca,'YLim',[min(psi_temp1) max(psi_temp1)])
+%          set(h1,'YData',psi_temp1);
+%          pause(0.00001);
+%     end;
     w1 = psi_temp1(fix(N/2) + 1);
     w2 = psi_temp2(fix(N/2) + 1);    
     j = j + 1;

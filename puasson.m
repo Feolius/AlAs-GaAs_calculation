@@ -2,7 +2,6 @@
 function fi=puasson(n)
 global l_lattice
 global N
-global fi1
 %Заряд электрона
 e = 1.6 * 10^-19;
 %Электрическая постоянная
